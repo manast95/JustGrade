@@ -1,20 +1,24 @@
 # 📝 JustGrade — Automated Response Scorer with Fairness Audit
 
-> Rubric-anchored scoring of open-ended responses — **accurate** (QWK-evaluated), **fair**
-> (subgroup-audited with adverse-impact testing + mitigation), and **explainable**
-> (phrase-level attention highlighting). A faithful research prototype of the methodology
-> behind automated interview / SJT scoring.
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
+[![Tests](https://img.shields.io/badge/tests-42%20passing-brightgreen.svg)](tests/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![GitHub](https://img.shields.io/badge/github-manast95%2FJustGrade-black?logo=github)](https://github.com/manast95/JustGrade)
+
+> Rubric-anchored scoring of open-ended responses — **accurate** (QWK 0.931), **fair**
+> (4/5ths adverse-impact audited + mitigated), and **explainable** (phrase-level attention
+> highlighting). A research prototype of the methodology behind automated interview / SJT scoring.
 
 This project mirrors the core problem in talent assessment: predict a competency score that
-agrees with expert human raters, then **prove** it's both accurate *and* fair, and show *why*
+agrees with expert human raters, then **prove** it is both accurate *and* fair, and show *why*
 each score was given.
 
 ---
 
-## Why this is interesting
+## Why this matters
 
 Automated hiring scores are high-stakes, legally-exposed decisions. A model that is accurate
-on average can still be **systematically unfair to a subgroup** — and, critically, the bias
+on average can still be **systematically unfair to a subgroup** — and critically, the bias
 often lives in the *human labels*, not the inputs. JustGrade demonstrates the full lifecycle:
 
 1. **Accuracy** — a fine-tuned transformer scores responses, beating an embeddings baseline.
@@ -30,28 +34,34 @@ often lives in the *human labels*, not the inputs. JustGrade demonstrates the fu
 
 | Metric | Baseline (bge + GBM) | Transformer (DistilBERT) |
 |--------|---------------------:|-------------------------:|
-| **QWK** (↑)            | 0.9050 | **0.9308** |
-| **QWK 95% CI**         | [0.8907, 0.9183] | **[0.9206, 0.9405]** |
-| MAE (↓)                | 0.3500 | **0.2764** |
-| Pearson r (↑)          | 0.9053 | **0.9308** |
-| Within-1 accuracy (↑)  | 98.5%  | **100%** |
+| **QWK** (↑)            | 0.905  | **0.931**  |
+| **QWK 95% CI**         | [0.891, 0.918] | **[0.921, 0.941]** |
+| MAE (↓)                | 0.350  | **0.276**  |
+| Pearson r (↑)          | 0.905  | **0.931**  |
+| Within-1 accuracy (↑)  | 98.5%  | **100%**   |
 
-The transformer's bootstrap confidence interval barely overlaps the baseline's — the
-improvement is statistically meaningful, not noise. *(Test split: 720 held-out responses.)*
+> The transformer's CI lower bound (0.921) exceeds the baseline's upper bound (0.918) —
+> the improvement is statistically meaningful. *(720 held-out test responses, 1 000-resample bootstrap.)*
 
-### Fairness findings → [`reports/fairness_report.md`](reports/fairness_report.md)
+### Fairness audit — [`reports/fairness_report.md`](reports/fairness_report.md)
 
-| | Fair labels (`human_score`) | Biased labels (`human_score_biased`) | After mitigation |
+| | Fair labels | Biased labels | After mitigation |
 |---|:---:|:---:|:---:|
 | **4/5ths adverse-impact ratio** | 1.000 ✅ | **0.750 ⚠️** | 1.000 ✅ |
 | Group A pass rate | 60% | 60% | 60% |
 | Group B pass rate | 60% | **45%** | 60% |
-| Accuracy vs *true* quality (Group B) | — | 85% | **90%** |
+| Group B accuracy vs true quality | — | 85% | **90%** |
 
-> **The headline arc:** the audit raises **no false alarm** on fair data, **catches** clear
-> adverse impact on biased data, and the mitigation **fixes it** — while *improving* Group B's
-> agreement with unbiased ground truth. Bias in the labels does not have to become bias in the
-> decision.
+> **The headline arc:** no false alarm on fair data → catches adverse impact on biased data →
+> mitigation resolves it while *improving* Group B's alignment with unbiased ground truth.
+
+---
+
+## Screenshots
+
+| Score a Response | Model Card | Fairness Dashboard |
+|:---:|:---:|:---:|
+| Predicted score + confidence + phrase highlights | Bootstrap CI + confusion matrix + calibration | 4/5ths ratio + selection-rate chart + full report |
 
 ---
 
@@ -61,7 +71,7 @@ improvement is statistically meaningful, not noise. *(Test split: 720 held-out r
  raw data ─► 1. Ingest & validate (schema contract, no-leakage check)
                 │
                 ▼
-            2. Preprocess  (stratified train/val/test, group/question aware)
+            2. Preprocess  (stratified train/val/test, group/question-aware)
               ┌─────────────┴──────────────┐
               ▼                             ▼
    3a. BASELINE                   3b. TRANSFORMER
@@ -69,12 +79,12 @@ improvement is statistically meaningful, not noise. *(Test split: 720 held-out r
    + GradientBoosting             (HF Trainer, early stopping on val QWK)
               └─────────────┬──────────────┘
                             ▼
-            4. EVALUATE  QWK (+ bootstrap CI) / MAE / corr / calibration
+            4. EVALUATE  QWK + bootstrap CI / MAE / calibration curve
                             ▼
             5. FAIRNESS AUDIT  subgroup metrics, 4/5ths rule,
-               fairlearn parity, per-group threshold mitigation
+               fairlearn parity/odds, per-group threshold mitigation
                             ▼
-            6. EXPLAINABILITY  attention-rollout phrase highlighting
+            6. EXPLAINABILITY  attention rollout → phrase highlighting
                             ▼
             7. STREAMLIT APP  score live + confidence routing +
                model card + fairness dashboard
@@ -82,24 +92,55 @@ improvement is statistically meaningful, not noise. *(Test split: 720 held-out r
 
 ---
 
-## Quick start
+## Getting started
 
-**Prerequisite:** unzip the dataset bundle into the project root so `data/processed/{train,val,test}.csv`
-and `data/raw/responses.csv` exist (4,800 rows, pre-split).
+### 1. Clone & install
 
 ```bash
+git clone https://github.com/manast95/JustGrade.git
+cd JustGrade
 python3 -m venv venv && source venv/bin/activate
-make setup           # install dependencies
-make data-check      # confirm the dataset is present + print label distributions
-make all             # baseline → transformer → eval → fairness  (~15 min, CPU/MPS)
-make app             # launch the Streamlit demo at http://localhost:8501
+make setup
 ```
 
-Or run stages individually: `make baseline`, `make transformer`, `make eval`, `make fairness`.
-Run the test suite with `make test`.
+### 2. Add the dataset
 
-> **Enterprise networks (Zscaler / corporate proxy):** model downloads use the system trust
-> store via `truststore` (auto-injected in `src/__init__.py`) — no `sudo`, no cert wrangling.
+The data CSVs are not included in the repo (they contain synthetic candidate data).
+Place the dataset bundle so the following files exist:
+
+```
+data/
+├── raw/responses.csv          # 4 800 rows
+└── processed/
+    ├── train.csv              # 3 360 rows (70 %)
+    ├── val.csv                #   720 rows (15 %)
+    └── test.csv               #   720 rows (15 %)
+```
+
+Verify the data is present:
+```bash
+make data-check
+```
+
+### 3. Train & evaluate
+
+```bash
+make all      # baseline → transformer → eval → fairness audit  (~15 min on CPU/MPS)
+make app      # launch the Streamlit demo at http://localhost:8501
+```
+
+Or run stages individually:
+
+```bash
+make baseline      # train bge + GBM baseline
+make transformer   # fine-tune DistilBERT (~13 min on M1)
+make eval          # metrics, confusion matrix, calibration, model card
+make fairness      # full fairness audit + fairness_report.md
+make test          # 42 pytest tests with coverage
+```
+
+> **Enterprise / Zscaler networks:** SSL inspection is handled automatically via `truststore`
+> (injected in `src/__init__.py`) — no `sudo`, no manual cert setup needed.
 
 ---
 
@@ -107,77 +148,77 @@ Run the test suite with `make test`.
 
 | Tab | What it shows |
 |---|---|
-| **🎯 Score a Response** | Pick one of 12 questions (auto-fills rubric + a real high/low example), score it, see the predicted score, a **confidence gauge**, a **human-review flag** for ambiguous cases, and **attention-based phrase highlights**. |
-| **📊 Model Card** | Baseline vs transformer metric table (direction-aware best-cell highlighting), **bootstrap QWK confidence intervals**, confusion matrices, and **calibration curves**. |
-| **⚖️ Fairness Dashboard** | Live 4/5ths ratios (fair / biased / mitigated), selection-rate before/after chart, subgroup metric comparison, and the full audit report. |
+| **🎯 Score a Response** | Pick one of 12 competency questions (auto-fills rubric + a real high/low response from the dataset), score it with either model, see the **predicted score**, **confidence gauge**, a **human-review flag** for ambiguous cases, and **attention-based phrase highlights** |
+| **📊 Model Card** | Baseline vs transformer metric table (direction-aware highlighting), **bootstrap QWK confidence intervals**, confusion matrices, and **calibration curves** |
+| **⚖️ Fairness Dashboard** | Live 4/5ths ratios (fair / biased / mitigated), selection-rate before/after chart, subgroup QWK/MAE comparison, and the full audit report |
 
 ---
 
 ## Repository layout
 
 ```
-src/
-├── data/ingest.py           # load + validate splits (schema contract)
-├── models/baseline.py       # embeddings + GBM (with disk-cached embeddings)
-├── models/transformer.py    # DistilBERT regression head (batched inference)
-├── models/predict.py        # unified predict(question, rubric, response)
-├── eval/metrics.py          # QWK, MAE, corr, within-1, bootstrap CI
-├── eval/evaluate.py         # full eval + confusion matrix + calibration + model card
-├── eval/fairness.py         # subgroup metrics, 4/5ths, fairlearn, mitigation, report
-├── eval/confidence.py       # prediction confidence + human-review routing
-├── explain/attributions.py  # attention rollout + HTML phrase highlighting
-└── utils/{config,logging}.py
-app/streamlit_app.py         # 3-tab interactive demo
-scripts/01–05_*.py           # phase driver scripts
-tests/                       # 42 tests (metrics, attributions, confidence, config, leakage)
-reports/                     # metrics.json, model_card.md, fairness_report.md, figures/
+JustGrade/
+├── README.md
+├── SPEC.md                          # full product + engineering spec
+├── config.yaml                      # all hyperparams, paths, thresholds
+├── Makefile                         # setup / baseline / transformer / eval / fairness / app / test
+├── requirements.txt
+├── data/
+│   ├── generate_synthetic.py        # reproduces the dataset (seed=42)
+│   └── README.md                    # schema, generation method, fairness mechanism
+├── src/
+│   ├── data/ingest.py               # load + validate splits (schema contract)
+│   ├── models/
+│   │   ├── baseline.py              # embeddings + GBM (disk-cached embeddings)
+│   │   ├── transformer.py           # DistilBERT regression head (batched inference)
+│   │   └── predict.py              # unified predict(question, rubric, response)
+│   ├── eval/
+│   │   ├── metrics.py               # QWK, MAE, corr, within-1, bootstrap CI
+│   │   ├── evaluate.py              # eval + confusion matrix + calibration + model card
+│   │   ├── fairness.py              # subgroup metrics, 4/5ths, mitigation, report
+│   │   └── confidence.py            # prediction confidence + human-review routing
+│   └── explain/attributions.py      # attention rollout + HTML phrase highlighting
+├── app/streamlit_app.py             # 3-tab interactive demo
+├── scripts/01–05_*.py               # phase driver scripts
+├── tests/                           # 42 tests (metrics, attributions, confidence, config, leakage)
+└── reports/                         # metrics.json, model_card.md, fairness_report.md, figures/
 ```
 
 ---
 
-## Tech stack & rationale
+## Tech stack
 
 | Layer | Choice | Why |
 |---|---|---|
-| Baseline | `BAAI/bge-small-en-v1.5` + GradientBoosting | Strong, fast, CPU-friendly — *always baseline first* |
-| Main model | `distilbert-base-uncased` + regression head (HF Trainer) | Real fine-tuning, small enough for free Colab/MPS |
-| Metric | Quadratic Weighted Kappa | Field standard for ordinal human-agreement |
-| Fairness | `fairlearn` | Industry-standard parity/odds metrics + 4/5ths rule |
+| Baseline | `BAAI/bge-small-en-v1.5` + GradientBoosting | Fast, CPU-friendly; establishes what fine-tuning buys |
+| Main model | `distilbert-base-uncased` + regression head | Real fine-tuning skill; small enough for free Colab / M1 |
+| Metric | Quadratic Weighted Kappa | Field standard for ordinal human-agreement scoring |
+| Fairness | `fairlearn` | Industry-standard demographic parity / equalized odds |
 | Explainability | Attention rollout (Abnar & Zuidema, 2020) | Propagates importance through all layers; no extra deps |
 | App | `streamlit` | Fastest path to a demoable interface |
-| Tests | `pytest` | Engineering signal; leakage guardrail |
+| Tests | `pytest` + `pytest-cov` | Engineering discipline; leakage guardrail |
 
 ---
 
-## Methodology notes (defensible choices)
+## Methodology notes
 
-- **QWK over accuracy** — penalises a 1↔5 disagreement far more than a 3↔4 one; accuracy treats
-  them identically. Reported with a **bootstrap 95% CI** so the comparison is statistically honest.
-- **Baseline first** — the embeddings+GBM baseline quantifies what fine-tuning actually buys
-  (+0.026 QWK here), rather than reaching for a transformer reflexively.
-- **Bias lives in the labels** — `group` is assigned independently of quality, so the data is
-  fair by construction; the bias is injected into `human_score_biased`. This mirrors the
-  real-world finding that human raters themselves can be biased — and is why auditing the
-  *label distribution* (not just model predictions) is the right lens.
-- **No-leakage guardrail** — `tests/test_split_no_leakage.py` asserts zero ID overlap across
-  splits; it runs in CI/`make test`.
-- **Confidence routing** — low-confidence predictions (raw score near a `.5` boundary) are
-  flagged for human review rather than auto-scored — the Augmented-Intelligence pattern.
+- **QWK over accuracy** — penalises a 1↔5 disagreement far more than a 3↔4 one; accuracy treats them identically. Reported with a bootstrap 95% CI so the comparison is statistically honest.
+- **Baseline first** — the embeddings + GBM baseline quantifies what fine-tuning actually buys (+0.026 QWK), rather than reaching for a transformer reflexively.
+- **Bias in the labels** — `group` is assigned independently of response quality; bias is injected into `human_score_biased`. This mirrors the real-world finding that human rater bias is the primary source of assessment unfairness — and is why auditing the *label distribution* (not just model predictions) is the right lens.
+- **No-leakage guardrail** — `tests/test_split_no_leakage.py` asserts zero ID overlap across splits and runs in every `make test` invocation.
+- **Confidence routing** — low-confidence predictions (raw score near a `.5` boundary) are flagged for human review rather than auto-scored — the Augmented-Intelligence pattern.
 
 ---
 
 ## Honest limitations
 
-- The `group` attribute and the bias mechanism are **simulated** to demonstrate methodology,
-  not real demographic data.
+- The `group` attribute and bias mechanism are **simulated** to demonstrate methodology, not real demographic groups.
 - Response text is **template-assembled** — fluent, but less varied than real candidate writing.
-- The threshold-optimisation mitigation addresses **decision equity**, not score equity — the
-  underlying scores are unchanged.
-- This is a **research prototype**: no psychometric validity claim, no production SLA/auth.
+- The threshold-optimisation mitigation addresses **decision equity** (who passes), not score equity — underlying scores are unchanged.
+- This is a **research prototype**: no psychometric validity claim, no production SLA or auth.
 
 ---
 
-## License & data
+## License
 
-Uses only the provided synthetic dataset (and optionally a public set like ASAP-AES). It never
-assumes access to real candidate data.
+MIT — see [LICENSE](LICENSE).
