@@ -1,0 +1,29 @@
+label_range: [1, 5]
+pass_threshold: 3            # for adverse-impact selection-rate analysis
+seed: 42
+data:
+  train_path: data/processed/train.csv
+  val_path: data/processed/val.csv
+  test_path: data/processed/test.csv
+  label_col: human_score          # FAIR labels by default; switch to human_score_biased for bias demo
+baseline:
+  embedding_model: BAAI/bge-small-en-v1.5
+  regressor: gradient_boosting   # or ridge
+transformer:
+  backbone: distilbert-base-uncased
+  max_length: 384
+  lr: 2.0e-5
+  epochs: 4
+  batch_size: 16
+  use_lora: false
+fairness:
+  group_col: group
+  reference_col: true_quality     # unbiased ground truth to validate mitigation against
+  mitigation: threshold_optimizer   # or reweighing
+eval:
+  bootstrap_n: 1000               # resamples for QWK confidence intervals
+  bootstrap_ci: 0.95              # confidence level
+review:
+  min_confidence: 0.5             # predictions below this confidence route to human review
+cache:
+  embeddings_dir: .cache/embeddings   # disk cache for baseline sentence-transformer embeddings

@@ -1,0 +1,38 @@
+# Core ML
+torch>=2.2.0
+transformers>=4.40.0
+sentence-transformers>=3.0.0
+scikit-learn>=1.4.0
+numpy>=1.26.0
+pandas>=2.2.0
+
+# Fairness
+fairlearn>=0.10.0
+
+# Explainability (captum installed separately in Phase 6 — has scipy upper-bound conflict)
+# captum>=0.7.0
+shap>=0.45.0
+
+# Evaluation
+# Pin >=1.17.0: earlier versions have no pre-built wheel for Python 3.14 ARM64
+scipy>=1.17.0
+
+# App
+streamlit>=1.35.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Utils
+pyyaml>=6.0.1
+tqdm>=4.66.0
+truststore>=0.9.1       # system trust store (macOS Keychain / Zscaler enterprise certs)
+
+# Optional PEFT (LoRA)
+peft>=0.11.0
+
+# Testing
+pytest>=8.2.0
+pytest-cov>=5.0.0
+
+# Experiment tracking (optional stretch)
+# mlflow>=2.13.0

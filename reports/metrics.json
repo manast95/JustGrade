@@ -1,0 +1,28 @@
+{
+  "baseline": {
+    "label_col": "human_score",
+    "qwk": 0.90499306518724,
+    "mae": 0.35,
+    "pearson": 0.9052882927476613,
+    "spearman": 0.905371891310164,
+    "within_one_acc": 0.9847222222222223,
+    "qwk_mean": 0.9047979965527784,
+    "qwk_ci_low": 0.8907074015667611,
+    "qwk_ci_high": 0.9183182895203814,
+    "ci_level": 0.95,
+    "n_boot": 1000
+  },
+  "transformer": {
+    "label_col": "human_score",
+    "qwk": 0.9308307264511644,
+    "mae": 0.2763888888888889,
+    "pearson": 0.9308424785518092,
+    "spearman": 0.9308000186995998,
+    "within_one_acc": 1.0,
+    "qwk_mean": 0.9308376796571788,
+    "qwk_ci_low": 0.9206364038270725,
+    "qwk_ci_high": 0.9405009156456559,
+    "ci_level": 0.95,
+    "n_boot": 1000
+  }
+}

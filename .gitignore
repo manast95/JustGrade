@@ -1,0 +1,45 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.env
+.venv/
+venv/
+env/
+
+# Models
+models/
+*.pt
+*.bin
+*.safetensors
+
+# Caches
+.cache/
+
+# Reports — keep generated output (portfolio pieces); only exclude large local files
+# reports/ is fully tracked
+
+# Data — keep directory structure & README, ignore large CSVs
+data/raw/*.csv
+data/processed/*.csv
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/*.ipynb
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Claude Code project settings (machine-local)
+.claude/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+
+# MLflow (stretch)
+mlruns/

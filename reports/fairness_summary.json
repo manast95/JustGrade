@@ -1,0 +1,41 @@
+{
+  "pass_threshold": 3,
+  "fair": {
+    "ratio": 1.0,
+    "adverse_impact_flag": false,
+    "selection_rates": {
+      "A": 0.6,
+      "B": 0.6
+    },
+    "demographic_parity_difference": 0.025
+  },
+  "biased": {
+    "ratio": 0.75,
+    "adverse_impact_flag": true,
+    "selection_rates": {
+      "A": 0.6,
+      "B": 0.45
+    },
+    "demographic_parity_difference": 0.0417
+  },
+  "mitigated": {
+    "ratio": 1.0,
+    "adverse_impact_flag": false,
+    "selection_rates": {
+      "A": 0.6,
+      "B": 0.6
+    }
+  },
+  "true_quality_validation": {
+    "accuracy_before": 0.925,
+    "accuracy_after": 0.9055555555555556,
+    "accuracy_by_group_before": {
+      "A": 1.0,
+      "B": 0.85
+    },
+    "accuracy_by_group_after": {
+      "A": 0.9111111111111111,
+      "B": 0.9
+    }
+  }
+}
